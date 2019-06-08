@@ -99,7 +99,7 @@ const offset = {
   SOUTH: [1, 0]
 };
 //Clock
-var treeMin  = 60 * 2;
+var treeMin  = 60 * 1;
 var clockLabel = document.getElementById('clock');
 var forward_button = document.getElementById('forward');
 var left_button = document.getElementById('left');
@@ -1477,11 +1477,7 @@ function loadTile(path,pos) {
       n_mesh.position.y = value[1];
       n_mesh.position.z = value[2];
       n_mesh.scale.set(0.5,0.5,0.5);
-      //THREE.GeometryUtils.merge(n_mesh.geometry, mesh)
-      // n_mesh.matrixAutoUpdate = false;
-			// n_mesh.updateMatrix();
       scene.add(n_mesh);
-      //console.log(value);
     });
   });
 }
@@ -1507,12 +1503,12 @@ function loadCar(x,y,z) {
   carBox = new THREE.Mesh(cubeGeometry, wireMaterial);
   var loader = new THREE.GLTFLoader(loadingManager);
   loader.load('Models/lowPolyCar2.glb', function(gltf){
-    gltf.scene.traverse(function(node){
-      if(node instanceof THREE.Mesh){
-        node.castShadow = true;
-        //node.receiveShadow = true;
-     }
-    });
+    // gltf.scene.traverse(function(node){
+    //   if(node instanceof THREE.Mesh){
+    //     node.castShadow = true;
+    //     //node.receiveShadow = true;
+    //  }
+    // });
     car = gltf.scene;
     carBox.position.y    = y+0.05;
     carBox.rotation.y    = -Math.PI/2;
@@ -1554,16 +1550,15 @@ function updateTimer(time){
   sec = parseInt(time % 60, 10);
 
   minGoal = parseInt(treeMin / 60, 10);
-  secGoal = treeMin/2-1;
+  // secGoal = treeMin/2 - 1 ;
+  secGoal = 59;
 
   minGoal -= min;
   secGoal -= sec;
 
-  minGoal = minGoal < 10 ? "0" + minGoal : minGoal;
-  secGoal = secGoal < 10 ? "0" + secGoal : secGoal;
-
-
-
+  minGoal = Math.abs(minGoal) < 10 ? "0" + minGoal : minGoal;
+  secGoal = Math.abs(secGoal) < 10 ? "0" + secGoal : secGoal;
+  console.log(secGoal);
 
   clockLabel.innerHTML =  minGoal + ':'+ secGoal;
 }
@@ -1693,14 +1688,17 @@ function onlose(){
   clock.stop();
   var loseScreen = document.getElementById('lose-screen');
   var ui = document.getElementById('info');
+  ui.classList.remove('fade-in');
   ui.classList.add('fade-out');
+  bandera = false;
   //loseScreen.classList.add('fade-in');
 
 }
 function ifLose(){
-  if(checkifLose() && !lose){
+  if(checkifLose()){
     lose = true;
     console.log('You lose');
+
     onlose();
   }
 }
@@ -1708,7 +1706,7 @@ function checkifLose(){
   if(points < 0){
     return true;
   }
-  if(minGoal <= 0){
+  if(minGoal <= 0 && secGoal <= 0){
     return true;
   }
   return false;
@@ -1719,4 +1717,8 @@ function onWindowsResize(){
   renderer.setSize(sceneWidth, sceneHeight);
   camera.aspect = sceneWidth/sceneHeight;
   camera.updateProjectionMatrix();
+  if(mainMenuState){
+    cinematicCamera.aspect = sceneWidth/sceneHeight;
+    cinematicCamera.updateProjectionMatrix();
+  }
 }
