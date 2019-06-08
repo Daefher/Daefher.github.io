@@ -1569,18 +1569,18 @@ function updateTimer(time){
 }
 function update() {
   requestAnimationFrame(update)
-  now = Date.now();
-  delta = now - then;
-  if(delta > interval){
-    then = now - (delta%interval);
-    //carBox.quaternion.multiplyQuaternions(autoRotationQuaternion, carBox.quaternion);
-    render();
-    TWEEN.update();
-    stats.update();
-  }
-  //render();
-  //TWEEN.update();
-  //stats.update();
+  // now = Date.now();
+  // delta = now - then;
+  // if(delta > interval){
+  //   then = now - (delta%interval);
+  //   //carBox.quaternion.multiplyQuaternions(autoRotationQuaternion, carBox.quaternion);
+  //   render();
+  //   TWEEN.update();
+  //   stats.update();
+  // }
+  render();
+  TWEEN.update();
+  stats.update();
   }
 function createSemaphore(x,y,z){
 

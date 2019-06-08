@@ -15,6 +15,31 @@ body{
 	        animation: scale-in-center 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
 }
 
+i {
+  border: solid black;
+  border-width: 0 10px 10px 0;
+  display: inline-block;
+  padding: 10px;
+}
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
 #clock{
   grid-area : clock;
 }
@@ -44,7 +69,7 @@ body{
     display: grid;
     grid-template-columns: auto auto auto;
     justify-content: center;
-    grid-column-gap: 50px;
+    grid-column-gap: 60px;
     /* background: grey; */
     align-content: center;
 }
@@ -195,7 +220,7 @@ body{
   font-weight: 400;
   line-height: 1;
   /* margin: 20px; */
-  padding: 20px;
+  padding: 40px;
   text-decoration: none;
   text-align: center;
   text-transform: uppercase;
