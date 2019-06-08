@@ -1506,7 +1506,7 @@ function loadCar(x,y,z) {
   wireMaterial.visible = true;
   carBox = new THREE.Mesh(cubeGeometry, wireMaterial);
   var loader = new THREE.GLTFLoader(loadingManager);
-  loader.load('models/lowPolyCar2.glb', function(gltf){
+  loader.load('Models/lowPolyCar2.glb', function(gltf){
     gltf.scene.traverse(function(node){
       if(node instanceof THREE.Mesh){
         node.castShadow = true;
