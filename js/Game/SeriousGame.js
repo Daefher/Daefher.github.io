@@ -20,7 +20,7 @@ var c_tree;
 var tree1;
 
 //
-var fps = 40;
+var fps = 30;
 var now;
 var then = Date.now();
 var interval = 1000/fps;
@@ -1571,7 +1571,7 @@ function update() {
   requestAnimationFrame(update)
   now = Date.now();
   delta = now - then;
-  if(delta > interval){    
+  if(delta > interval){
     then = now - (delta%interval);
     //carBox.quaternion.multiplyQuaternions(autoRotationQuaternion, carBox.quaternion);
     render();
