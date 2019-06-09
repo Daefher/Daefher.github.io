@@ -55,6 +55,18 @@ i {
 #stats{
   grid-area: stats;
 }
+.points-container{
+  width: 100%;
+  margin-top: 5px;
+  height: 20%;
+  background-color: #ddd;
+}
+.points{
+  height: 100%;
+  width: 100%;
+  background-color: #f44336;
+
+}
 .div-container{
   display: grid;
   grid-template-areas:

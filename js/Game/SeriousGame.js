@@ -9,8 +9,8 @@ var radius = 5;
 var scene;
 var sun;
 var container;
-var points = 1000;
-var pointElement = document.getElementById('points');
+var points = 100;
+var pointElement = document.getElementById("bar");
 var lose = false;
 const data = '{ "signals" : ['+
                 '"name": "Stop",'+
@@ -633,7 +633,7 @@ function createScene() {
 
   //createInstances(city.getMatrix());
   //WindowResize
-  pointElement.innerHTML = points;
+  //pointElement.innerHTML = points;
   window.addEventListener('resize', onWindowsResize, false);
   onWindowsResize();
   //document.addEventListener('keydown',onKeyDown, false);
@@ -681,10 +681,16 @@ function moveTarjet(dx,dy,dz){
     forward_button.disabled = true;
     left_button.disabled = true;
     right_button.disabled =  true;
+    points-=0.05;
+    pointElement.style.width = Math.floor(points) + '%';
+    pointElement.innerHTML = Math.floor(points*1)+'%';
+    console.log(points)
+
   }).onComplete(function(){
     forward_button.disabled = false;
     left_button.disabled = false;
     right_button.disabled =  false;
+
   }).start();
   //if(carControl.isRotatingLeft) tweenMovement.onUpdate(function(){ carBox.rotation.y += (Math.PI/2)/5});
   //tweenMovement.start();
