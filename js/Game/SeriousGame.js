@@ -633,7 +633,6 @@ function createScene() {
 
   //createInstances(city.getMatrix());
   //WindowResize
-  //pointElement.innerHTML = points;
   window.addEventListener('resize', onWindowsResize, false);
   onWindowsResize();
   //document.addEventListener('keydown',onKeyDown, false);
@@ -681,7 +680,7 @@ function moveTarjet(dx,dy,dz){
     forward_button.disabled = true;
     left_button.disabled = true;
     right_button.disabled =  true;
-    points-=0.05;
+    points -= 0.05;
     pointElement.style.width = Math.floor(points) + '%';
     pointElement.innerHTML = Math.floor(points*1)+'%';
     console.log(points)
