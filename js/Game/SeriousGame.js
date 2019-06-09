@@ -682,7 +682,7 @@ function moveTarjet(dx,dy,dz){
     right_button.disabled =  true;
     points -= 0.05;
     pointElement.style.width = Math.floor(points) + '%';
-    pointElement.innerHTML = Math.floor(points*1)+'%';
+    //pointElement.innerHTML = Math.floor(points*1)+'%';
     console.log(points)
 
   }).onComplete(function(){
