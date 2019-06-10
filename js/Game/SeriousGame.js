@@ -1339,7 +1339,7 @@ function updateCarTEMP(){
 
       break;
     default:
-      onlose();
+
   }
 
 
@@ -1607,6 +1607,7 @@ function update() {
   collideMeshList.forEach(function(value){
     value.rotation.y += 0.01;
   });
+  ifLose();
   TWEEN.update();
   stats.update();
   }
@@ -1691,8 +1692,7 @@ function render() {
   //updateCar();
 
   if(bandera) updateCarTEMP();
-  currentSecond = getSecond();
-  ifLose();
+  currentSecond = getSecond();  
   updateLights(currentSecond);
   if(mainMenuState){
     theta += 0.1;
