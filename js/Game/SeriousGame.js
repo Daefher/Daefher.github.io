@@ -10,6 +10,7 @@ var scene;
 var sun;
 var container;
 var points = 100;
+const maxPoits = 100;
 var pointElement = document.getElementById("bar");
 var lose = false;
 const data = '{ "signals" : ['+
@@ -272,7 +273,6 @@ function City(){
             case 'SOUTHEAST':
               break;
             case 'SOUTHWEST':
-
               break;
             case 'NORTHEAST':
 
@@ -592,7 +592,7 @@ function createScene() {
   //Cinematic Camera
   cinematicCamera = new THREE.CinematicCamera(75, sceneWidth / sceneHeight, 1, 1000);
   //cinematicCamera.setLens(5);
-    cinematicCamera.position.set(14,5, 14);
+  cinematicCamera.position.set(14,5, 14);
   //camera.position.set(0,0.2,-0.5);
   //camera.lookAt(scene.position);
   //camera.lookAt(scene.position.x,15,5);
@@ -628,9 +628,6 @@ function createScene() {
   //stats
   stats = new Stats();
   container.appendChild(stats.dom);
-  //Creacion de Riel para el automovil
-  up = new THREE.Vector3(0,1,0);
-
   //createInstances(city.getMatrix());
   //WindowResize
   window.addEventListener('resize', onWindowsResize, false);
@@ -680,16 +677,12 @@ function moveTarjet(dx,dy,dz){
     forward_button.disabled = true;
     left_button.disabled = true;
     right_button.disabled =  true;
-    points -= 0.05;
-    pointElement.style.width = Math.floor(points) + '%';
-    //pointElement.innerHTML = Math.floor(points*1)+'%';
-    console.log(points)
-
+    points -= 0.1;
+    pointElement.style.width = points+ '%';
   }).onComplete(function(){
     forward_button.disabled = false;
     left_button.disabled = false;
     right_button.disabled =  false;
-
   }).start();
   //if(carControl.isRotatingLeft) tweenMovement.onUpdate(function(){ carBox.rotation.y += (Math.PI/2)/5});
   //tweenMovement.start();
@@ -703,12 +696,11 @@ function RotateTarjet(dx,dy,dz,direction){
     forward_button.disabled = true;
     left_button.disabled = true;
     right_button.disabled =  true;
+
   }).
   onComplete(function(){
     if(carAngle >= Math.PI && direction) carBox.rotation.y = -Math.PI/2;
     if(carAngle >= Math.PI && !direction)  carBox.rotation.y = Math.PI/2;
-
-
     carAngle = carBox.rotation.y;
     if(carAngle == -Math.PI){carBox.rotation.y = Math.PI; carAngle = carBox.rotation.y};
     if(carAngle >= 2 * Math.PI){carBox.rotation.y = 0; carAngle = carBox.rotation.y};
@@ -778,6 +770,8 @@ function createMap(matrix){
   var build3Pos = [];
   var stopPos = [];
   var schoolPos = [];
+  var fuelPos = [];
+  var rand1;
 
   for (var x = 0; x < matrix.length; x++) {
     var cont = 0;
@@ -785,7 +779,7 @@ function createMap(matrix){
       switch (matrix[x][y]) {
         case 0:
           if(cont>=0){
-            var rand1 = Math.random();
+            rand1 = Math.random();
             if(rand1 < 0.5){
                 treeType2Pos.push([x,-2.29,y]);
             }
@@ -801,11 +795,15 @@ function createMap(matrix){
           break;
         case 1:
           streePos.push([x,-2.5,y]);
-          var rand = Math.floor(Math.random()*(30-19)+19);
-          if(rand == y && x > 15 && !isGoalAdded){
+          //rand1 = Math.floor(Math.random()*(30-19)+19);
+          rand1 = Math.random();
+          if(rand1 < 0.3){
+            fuelPos.push([x,-2.45,y]);
+          }
+          if(rand1 == y && x > 15 && !isGoalAdded){
             goal = createGoal();
             goalHitMesh.add(goal);
-            goalHitMesh.position.set(x,-2.4, rand);
+            goalHitMesh.position.set(x,-2.4, rand1);
             collideGoal.push(goalHitMesh);
             scene.add(goalHitMesh);
             isGoalAdded = true;
@@ -817,11 +815,11 @@ function createMap(matrix){
 
           break;
         case 3:
-          var d = Math.random();
-          if(d < 0.5){
+          rand1   = Math.random();
+          if(rand1 < 0.5){
             //loadBuild('Models/Buildings/lowPolyBuild8.glb',x,-2.5,y);
             build1Pos.push([x,-2.5,y])
-          }else if (d < 0.7  ){
+          }else if (rand1 < 0.7  ){
             build2Pos.push([x,-2.5,y])
           //// TODO: descomentar esto  loadBuild('Models/Buildings/lowpolybuild7.glb',x,-2.5,y);
           } else {
@@ -864,9 +862,6 @@ function createMap(matrix){
             var hitboxMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(1,.5,1), collidableCubeMaterial);
             hitboxMesh.position.set(x,-2.5,y+.5);
 
-            //scene.add(spriteSign);
-
-            //scene.add(sign);
             collideMeshListPoints.push(hitboxMesh);
             scene.add(hitboxMesh);
             maxStopSign = 0;
@@ -886,7 +881,7 @@ function createMap(matrix){
         isGoalAdded = true;
       }
       if(x == 0){
-        var rand1 = Math.random();
+        rand1 = Math.random();
         if(rand1 < 0.5){
         //  loadModel("Models/Trees/tree1.glb",x,-2.25,y);
             build1Pos.push([x-1,-2.5,y]);
@@ -901,7 +896,7 @@ function createMap(matrix){
 
       }
        if(y == 0){
-        var rand1 = Math.random();
+        rand1 = Math.random();
         if(rand1 < 0.5){
         //  loadModel("Models/Trees/tree1.glb",x,-2.25,y);
             build1Pos.push([x,-2.5,y-1]);
@@ -915,7 +910,7 @@ function createMap(matrix){
         }
       }
        if (x == matrix.length-1) {
-        var rand1 = Math.random();
+        rand1 = Math.random();
         if(rand1 < 0.5){
         //  loadModel("Models/Trees/tree1.glb",x,-2.25,y);
             build1Pos.push([x+1,-2.5,y]);
@@ -931,7 +926,7 @@ function createMap(matrix){
       }
        if(y == matrix.length-1){
 
-        var rand1 = Math.random();
+        rand1 = Math.random();
         if(rand1 < 0.5){
         //  loadModel("Models/Trees/tree1.glb",x,-2.25,y);
             build1Pos.push([x,-2.5,y+1]);
@@ -949,18 +944,19 @@ function createMap(matrix){
 
   }
 
-  var rot = (Math.random() > 0.5) ? Math.PI/2 : -Math.PI/2;
+  rand1 = (Math.random() > 0.5) ? Math.PI/2 : -Math.PI/2;
   //loadModelMerge("Models/Signals/stopsign.glb", stopPos,[0.009,0.009,0.009], Math.PI/2);
+  loadModel("Models/Items/fuelTank.glb", fuelPos,[0.1/2,0.1/2,0.05/2]);
   loadModelMerge("Models/Signals/NOestacionarse.glb", stopPos,[0.1/20,2.0/15,0.1/15],Math.PI/2);
   loadModelMerge("Models/Signals/signal2.glb", schoolPos,[0.1/15,2.0/15,0.1/15]);
   loadModelMerge("Models/Trees/tree1.glb", treePos,[0.1,1/4,0.1]);
-  loadModelMerge("Models/Trees/tree3.glb",treeType2Pos,[0.05,0.05,0.05],rot);
+  loadModelMerge("Models/Trees/tree3.glb",treeType2Pos,[0.05,0.05,0.05],rand1);
   loadModelMerge("Models/Trees/bush.glb",treeType3Pos,[0.1,0.1,0.1]);
   loadModelMerge('Models/Trees/STREET.glb',streePos,tilesize);
   loadModelMerge('Models/Trees/GRASS.glb',grassPos,tilesize);
-  loadModelMerge('Models/Buildings/lowPolyBuild8.glb',build1Pos,tilesize,rot);
-  loadModelMerge('Models/Buildings/lowpolybuild7.glb',build2Pos,tilesize,rot);
-  loadModelMerge('Models/Buildings/lowPolyBuild6.glb',build3Pos,tilesize,rot);
+  loadModelMerge('Models/Buildings/lowPolyBuild8.glb',build1Pos,tilesize,rand1);
+  loadModelMerge('Models/Buildings/lowpolybuild7.glb',build2Pos,tilesize,rand1);
+  loadModelMerge('Models/Buildings/lowPolyBuild6.glb',build3Pos,tilesize,rand1);
 
 }
 function exist(x,y,matrix){
@@ -988,8 +984,10 @@ function collisionDectection(originPoint){
     var collisionResult = ray.intersectObjects(collideMeshList);
     var collisionResultPoints = ray.intersectObjects(collideMeshListPoints);
     var collisionGoalResult = ray.intersectObjects(collideGoal);
+    console.log('in function',collisionResult[0]);
     if(collisionResult.length > 0 && collisionResult[0].distance < directionVector.length()){
-        //console.log('hit,1');
+        scene.remove(collisionResult[0].object)
+        console.log('hit,1');
         return [true,1];
     }
     if(collisionResultPoints.length > 0 && collisionResultPoints[0].distance < directionVector.length() && scene.getObjectById(collideMeshListPoints[0].id)){
@@ -1006,7 +1004,7 @@ function collisionDectection(originPoint){
 
   }
   //console.log('not hit');
-  carControl.isStoping = false;
+  //carControl.isStoping = false;
   return [false,1];
 }
 function onKeyUp(event){
@@ -1060,7 +1058,9 @@ function updateCarTEMP(){
   var oz = Math.round(carBox.position.z);
   moves = Evaluate(ox, oy, oz);
   var nPos = [];
-  console.log(moves);
+  var originPoint = carBox.position.clone()
+  var collide = collisionDectection(originPoint);
+  console.log(collide[0]);
   // NORTH: [-1,0],
   // WEST: [0, -1],
   // EAST: [0, 1],
@@ -1070,11 +1070,12 @@ function updateCarTEMP(){
     case 1:
       if(moves[0] == 'NORTH' ){// [1,0,0] SUR EN EL OFFSET
         if(carControl.isMovingForward) moveTarjet(ox+0, oy+0, oz+1);
-        if(tweenMovement.onComplete) {console.log('click',forward_button.disabled);carControl.isMovingForward = false; forward_button.disabled = false; }
+        if(tweenMovement.onComplete) {/*console.log('click',forward_button.disabled);*/carControl.isMovingForward = false; forward_button.disabled = false; }
       }
       break;
       left_button.disabled = true;
       right_button.disabled = true;
+
     case 2:
       if(moves[0] == 'SOUTH' && moves[1]=='WEST' && carAngle == -Math.PI/2){
         if(carControl.isRotatingLeft){
@@ -1092,10 +1093,14 @@ function updateCarTEMP(){
         forward_button.disabled = true;
         left_button.disabled = true;
       }
-
       if(moves[0] == 'SOUTH' && moves[1]=='NORTH' && carAngle == -Math.PI/2){
         if(carControl.isMovingForward) moveTarjet(ox+0, oy+0, oz+1);
         if(tweenMovement.onComplete) {console.log('click',forward_button.disabled);carControl.isMovingForward = false; forward_button.disabled = false;}
+        if(collide[0] && collide[1] == 1){//
+          points += 5;
+          console.log('hola')
+          pointElement.style.width = points+ '%';
+        }
         left_button.disabled = true;
         right_button.disabled = true;
       }
@@ -1412,7 +1417,7 @@ function updateLights(currentSecond){
 }catch(e){}
 
 }
-function loadMerge(path,pos) {
+function loadMerge(path,pos,scale) {
   var loader = new THREE.GLTFLoader(loadingManager);
   var group = new THREE.Group();
   var geoPos = [];
@@ -1427,7 +1432,7 @@ function loadMerge(path,pos) {
       n_mesh.position.x = value[0];
       n_mesh.position.y = value[1];
       n_mesh.position.z = value[2];
-      n_mesh.scale.set(0.5,0.5,0.5);
+      n_mesh.scale.set(scale[0],scale[1],scale[2]);
       n_mesh.traverse(function (node) {
         if (node.isMesh) {
           geo = new THREE.Geometry().fromBufferGeometry( node.geometry );
@@ -1438,6 +1443,7 @@ function loadMerge(path,pos) {
      });
      var mergeMesh = new THREE.Mesh(mgeo, gltf.scene.children[0].material);
      scene.add(mergeMesh);
+     collideMeshList.push(mergeMesh);
   });
 }
 function loadModelMerge(path, pos, size, rotation){
@@ -1487,16 +1493,24 @@ function loadTile(path,pos) {
   });
 }
 function loadModel(path, pos, size) {
+  var cubeGeometry = new THREE.BoxGeometry(.15,.1,.09);
+  var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+  wireMaterial.visible = true;
   var loader = new THREE.GLTFLoader(loadingManager);
   loader.load(path, function(gltf){
     var mesh = gltf.scene;
+    var mgeo;
     pos.forEach(function(value){
       var n_mesh = mesh.clone();
-      n_mesh.position.x = value[0];
-      n_mesh.position.y = value[1];
-      n_mesh.position.z = value[2];
-      n_mesh.scale.set(size,size,size);
-      scene.add(n_mesh);
+      var collisionBox = new THREE.Mesh(cubeGeometry, wireMaterial);
+      collisionBox.position.x = value[0];
+      collisionBox.position.y = value[1];
+      collisionBox.position.z = value[2];
+      collisionBox.scale.set(size[0],size[1],size[2]);
+      collisionBox.updateMatrix();
+      collisionBox.add(n_mesh);
+      collideMeshList.push(collisionBox);
+      scene.add(collisionBox);
     });
   });
 
@@ -1563,11 +1577,12 @@ function updateTimer(time){
 
   minGoal = Math.abs(minGoal) < 10 ? "0" + minGoal : minGoal;
   secGoal = Math.abs(secGoal) < 10 ? "0" + secGoal : secGoal;
-  console.log(secGoal);
+  //console.log(secGoal);
 
   clockLabel.innerHTML =  minGoal + ':'+ secGoal;
 }
 function update() {
+
   requestAnimationFrame(update)
   // now = Date.now();
   // delta = now - then;
@@ -1579,6 +1594,10 @@ function update() {
   //   stats.update();
   // }
   render();
+  points = (points>=maxPoits) ? maxPoits : points;
+  collideMeshList.forEach(function(value){
+    value.rotation.y += 0.01;
+  });
   TWEEN.update();
   stats.update();
   }
