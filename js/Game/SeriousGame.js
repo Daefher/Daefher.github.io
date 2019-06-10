@@ -679,7 +679,7 @@ function moveTarjet(dx,dy,dz){
     forward_button.disabled = true;
     left_button.disabled = true;
     right_button.disabled =  true;
-    points -= 0.1;
+    points -= 0.05;
     pointElement.style.width = points+ '%';
 
   }).onComplete(function(){
@@ -1067,7 +1067,7 @@ function updateCarTEMP(){
   var collide = collisionDectection(originPoint);
   console.log(collide[0]);
   if(collide[0] && collide[1] == 1){//
-    points += 2;    
+    points += 2;
     pointElement.style.width = points+ '%';
   }
   // NORTH: [-1,0],
@@ -1141,8 +1141,6 @@ function updateCarTEMP(){
             if(tweenRotation.onComplete) carControl.isRotatingRight = false;
         }
       }
-
-
       break;
     case 3:
       if(moves[0] == 'SOUTH' && moves[1] == 'WEST' && moves[2] == 'NORTH' && carAngle == -Math.PI/2 ){
@@ -1341,7 +1339,7 @@ function updateCarTEMP(){
 
       break;
     default:
-
+      onlose();
   }
 
 
