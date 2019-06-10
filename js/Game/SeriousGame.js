@@ -6,11 +6,12 @@ var camera;
 var cinematicCamera;
 var theta = 0;
 var radius = 5;
+var inc = 5;
 var scene;
 var sun;
 var container;
 var points = 100;
-const maxPoits = 100;
+const maxPoints = 100;
 var pointElement = document.getElementById("bar");
 var lose = false;
 const data = '{ "signals" : ['+
@@ -672,6 +673,7 @@ function Evaluate(x,y,z){
   return moves;
 }
 function moveTarjet(dx,dy,dz){
+  var inc = 0;
   var tarjetPosition = new THREE.Vector3(dx,dy,dz);
   tweenMovement.to(tarjetPosition,carSpeed2).easing(TWEEN.Easing.Quadratic.Out).onUpdate(function(){
     forward_button.disabled = true;
@@ -679,10 +681,12 @@ function moveTarjet(dx,dy,dz){
     right_button.disabled =  true;
     points -= 0.1;
     pointElement.style.width = points+ '%';
+
   }).onComplete(function(){
     forward_button.disabled = false;
     left_button.disabled = false;
     right_button.disabled =  false;
+
   }).start();
   //if(carControl.isRotatingLeft) tweenMovement.onUpdate(function(){ carBox.rotation.y += (Math.PI/2)/5});
   //tweenMovement.start();
@@ -1057,10 +1061,15 @@ function updateCarTEMP(){
   var oy = carBox.position.y;
   var oz = Math.round(carBox.position.z);
   moves = Evaluate(ox, oy, oz);
+
   var nPos = [];
   var originPoint = carBox.position.clone()
   var collide = collisionDectection(originPoint);
   console.log(collide[0]);
+  if(collide[0] && collide[1] == 1){//
+    points += 2;    
+    pointElement.style.width = points+ '%';
+  }
   // NORTH: [-1,0],
   // WEST: [0, -1],
   // EAST: [0, 1],
@@ -1072,13 +1081,11 @@ function updateCarTEMP(){
         if(carControl.isMovingForward) moveTarjet(ox+0, oy+0, oz+1);
         if(tweenMovement.onComplete) {/*console.log('click',forward_button.disabled);*/carControl.isMovingForward = false; forward_button.disabled = false; }
       }
-      break;
       left_button.disabled = true;
       right_button.disabled = true;
-      if(collide[0] && collide[1] == 1){//
-        points += 5;
-        pointElement.style.width = points+ '%';
-      }
+
+      break;
+
     case 2:
       if(moves[0] == 'SOUTH' && moves[1]=='WEST' && carAngle == -Math.PI/2){
         if(carControl.isRotatingLeft){
@@ -1110,7 +1117,6 @@ function updateCarTEMP(){
         left_button.disabled = true;
         right_button.disabled = true;
       }
-
       if(moves[0] == 'EAST' && moves[1] == 'WEST' && carAngle == 0){
          if(carControl.isMovingForward) moveTarjet(ox+1, oy+0, oz+0);
           if(tweenMovement.onComplete) carControl.isMovingForward = false;
@@ -1123,7 +1129,6 @@ function updateCarTEMP(){
           left_button.disabled = true;
           right_button.disabled = true;
       }
-
       if(moves[0] == 'EAST' && moves[1] == 'NORTH' && carAngle == Math.PI/2){
         if(carControl.isRotatingLeft){
           RotateTarjet(ox-1, oy+0, oz+0,true);
@@ -1137,10 +1142,7 @@ function updateCarTEMP(){
         }
       }
 
-      if(collide[0] && collide[1] == 1){//
-        points += 5;
-        pointElement.style.width = points+ '%';
-      }
+
       break;
     case 3:
       if(moves[0] == 'SOUTH' && moves[1] == 'WEST' && moves[2] == 'NORTH' && carAngle == -Math.PI/2 ){
@@ -1277,10 +1279,7 @@ function updateCarTEMP(){
         }
         right_button.disabled = true;
       }
-      if(collide[0] && collide[1] == 1){//
-        points += 5;
-        pointElement.style.width = points+ '%';
-      }
+
       break;
     case 4:
       if(moves[0] == 'SOUTH' && moves[1] == 'EAST' && moves[2] == 'WEST' && moves[3] == 'NORTH' && carAngle == 0){
@@ -1339,14 +1338,13 @@ function updateCarTEMP(){
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
         }
       }
-      if(collide[0] && collide[1] == 1){//
-        points += 5;
-        pointElement.style.width = points+ '%';
-      }
+
       break;
     default:
 
   }
+
+
 }
 function onKeyDown(event){
   switch(event.keyCode){
@@ -1505,7 +1503,7 @@ function loadTile(path,pos) {
   });
 }
 function loadModel(path, pos, size) {
-  var cubeGeometry = new THREE.BoxGeometry(.15,.1,.09);
+  var cubeGeometry = new THREE.BoxGeometry(0.1,.1,.1);
   var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
   wireMaterial.visible = true;
   var loader = new THREE.GLTFLoader(loadingManager);
@@ -1518,7 +1516,7 @@ function loadModel(path, pos, size) {
       collisionBox.position.x = value[0];
       collisionBox.position.y = value[1];
       collisionBox.position.z = value[2];
-      collisionBox.scale.set(size[0],size[1],size[2]);
+      n_mesh.scale.set(size[0],size[1],size[2]);
       collisionBox.updateMatrix();
       collisionBox.add(n_mesh);
       collideMeshList.push(collisionBox);
@@ -1606,7 +1604,8 @@ function update() {
   //   stats.update();
   // }
   render();
-  points = (points>=maxPoits) ? maxPoits : points;
+  console.log("POINTS",points);
+  points = (points>=maxPoints) ? maxPoints : points;
   collideMeshList.forEach(function(value){
     value.rotation.y += 0.01;
   });
