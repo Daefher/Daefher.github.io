@@ -1075,7 +1075,10 @@ function updateCarTEMP(){
       break;
       left_button.disabled = true;
       right_button.disabled = true;
-
+      if(collide[0] && collide[1] == 1){//
+        points += 5;
+        pointElement.style.width = points+ '%';
+      }
     case 2:
       if(moves[0] == 'SOUTH' && moves[1]=='WEST' && carAngle == -Math.PI/2){
         if(carControl.isRotatingLeft){
@@ -1096,20 +1099,14 @@ function updateCarTEMP(){
       if(moves[0] == 'SOUTH' && moves[1]=='NORTH' && carAngle == -Math.PI/2){
         if(carControl.isMovingForward) moveTarjet(ox+0, oy+0, oz+1);
         if(tweenMovement.onComplete) {console.log('click',forward_button.disabled);carControl.isMovingForward = false; forward_button.disabled = false;}
-        if(collide[0] && collide[1] == 1){//
-          points += 5;
-          pointElement.style.width = points+ '%';
-        }
+
         left_button.disabled = true;
         right_button.disabled = true;
       }
       if(moves[0] == 'SOUTH' && moves[1]=='NORTH' && carAngle == Math.PI/2){
         if(carControl.isMovingForward) moveTarjet(ox+0, oy+0, oz-1);
         if(tweenMovement.onComplete) {console.log('click',forward_button.disabled);carControl.isMovingForward = false; forward_button.disabled = false;}
-        if(collide[0] && collide[1] == 1){//
-          points += 5;
-          pointElement.style.width = points+ '%';
-        }
+
         left_button.disabled = true;
         right_button.disabled = true;
       }
@@ -1117,20 +1114,12 @@ function updateCarTEMP(){
       if(moves[0] == 'EAST' && moves[1] == 'WEST' && carAngle == 0){
          if(carControl.isMovingForward) moveTarjet(ox+1, oy+0, oz+0);
           if(tweenMovement.onComplete) carControl.isMovingForward = false;
-          if(collide[0] && collide[1] == 1){//
-            points += 5;
-            pointElement.style.width = points+ '%';
-          }
           left_button.disabled = true;
           right_button.disabled = true;
       }
       if(moves[0] == 'EAST' && moves[1] == 'WEST' && carAngle == Math.PI){
          if(carControl.isMovingForward) moveTarjet(ox-1, oy+0, oz+0);
           if(tweenMovement.onComplete) carControl.isMovingForward = false;
-          if(collide[0] && collide[1] == 1){//
-            points += 5;
-            pointElement.style.width = points+ '%';
-          }
           left_button.disabled = true;
           right_button.disabled = true;
       }
@@ -1148,6 +1137,10 @@ function updateCarTEMP(){
         }
       }
 
+      if(collide[0] && collide[1] == 1){//
+        points += 5;
+        pointElement.style.width = points+ '%';
+      }
       break;
     case 3:
       if(moves[0] == 'SOUTH' && moves[1] == 'WEST' && moves[2] == 'NORTH' && carAngle == -Math.PI/2 ){
@@ -1158,10 +1151,7 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+0, oy+0, oz+1);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
+
         }
         right_button.disabled = true;
       }
@@ -1180,10 +1170,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+0, oy+0, oz-1);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         if(carControl.isRotatingRight && !carControl.isMovingForward){
             RotateTarjet(ox+1, oy+0, oz+0,false);
@@ -1200,10 +1186,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+1, oy+0, oz+0);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         left_button.disabled = true;
       }
@@ -1226,10 +1208,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox-1, oy+0, oz+0);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         right_button.disabled = true;
       }
@@ -1252,10 +1230,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+1, oy+0, oz+0);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         right_button.disabled = true;
       }
@@ -1267,10 +1241,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox-1, oy+0, oz+0);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         left_button.disabled = true;
       }
@@ -1293,10 +1263,6 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+0, oy+0, oz+1);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         left_button.disabled = true;
       }
@@ -1308,12 +1274,12 @@ function updateCarTEMP(){
         if(carControl.isMovingForward){
             moveTarjet(ox+0, oy+0, oz-1);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
-            if(collide[0] && collide[1] == 1){//
-              points += 5;
-              pointElement.style.width = points+ '%';
-            }
         }
         right_button.disabled = true;
+      }
+      if(collide[0] && collide[1] == 1){//
+        points += 5;
+        pointElement.style.width = points+ '%';
       }
       break;
     case 4:
@@ -1372,6 +1338,10 @@ function updateCarTEMP(){
             moveTarjet(ox-1, oy+0, oz+0);
             if(tweenMovement.onComplete) carControl.isMovingForward = false;
         }
+      }
+      if(collide[0] && collide[1] == 1){//
+        points += 5;
+        pointElement.style.width = points+ '%';
       }
       break;
     default:
