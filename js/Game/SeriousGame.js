@@ -46,6 +46,7 @@ const carSpeed2 = 1000;
 var carBackwardsSpeed = carSpeed*0.01;
 var angularSpeed = 0.01;
 
+
 //Manejo de collisiones
 var collideMeshList = [];
 var collideMeshListPoints = [];
@@ -82,18 +83,26 @@ var blackColor;
 //semaphore control
 var preSecond = 0;
 var currentSecond = 0;
-//
-var human;
+//Human
+var humans = [] ;
+var humanMaterial = [];
+var humansHitBox = [];
 var humanSpawn = [];
 var humansCreated = 0;
+var hMove;
+var humanWalkAnimation;
+var humanDeathAnimation;
+var humanprevAction;
+var humanActiveAction;
 var isHumanCreated = false;
 var mixer;
-//Path
-// var path;
-// var previousPoint;
-// var position = 0;
-// var up;
-// var pathPoints = []
+//Truck
+var truckSpawnBox = [];
+var truckCollisionBox = [];
+
+//Semaphore Collisions
+var collisionBoxFront = [];
+
 var GameStart = false;
 
 var effectComposer;
@@ -126,8 +135,7 @@ var centerLookAtMatrix = [14,0,14];
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 const loadingManager = new THREE.LoadingManager( () =>{
-  const loadingScreen = document.getElementById('loading-screen');
-
+const loadingScreen = document.getElementById('loading-screen');
   loadingScreen.classList.add('fade-out');
   loadingScreen.addEventListener('transitionend', onTransitionEnd);
  });
@@ -638,12 +646,13 @@ function createScene() {
   window.addEventListener('resize', onWindowsResize, false);
   onWindowsResize();
   //document.addEventListener('keydown',onKeyDown, false);
-  //document.addEventListener('keyup',onKeyUp, false);
+  document.addEventListener('keyup',onKeyUp, false);
   var start = document.getElementById('start');
   start.addEventListener('click', onStart,false);
   forward_button.addEventListener('click', onForwardButton,false);
   left_button.addEventListener('click', onLeftButton, false);
   right_button.addEventListener('click', onRightButton, false);
+
 }
 function Evaluate(x,y,z){
   var moves =  [];
@@ -780,7 +789,9 @@ function createMap(matrix){
   var stopPos = [];
   var schoolPos = [];
   var fuelPos = [];
+  var semaphorePos = [];
   var rand1;
+
 
   for (var x = 0; x < matrix.length; x++) {
     var cont = 0;
@@ -840,21 +851,15 @@ function createMap(matrix){
         case 4:
           streePos.push([x,-2.5,y]);
           var semaphore = createSemaphore(x,0,y);
-          var collidableCubeMesh = new THREE.Mesh(collidableCube,collidableCubeMaterial);
           var nPole = semaphore.clone();
 
-          collidableCubeMesh.rotation.y = degree;
-          collidableCubeMesh.position.x = x;
-          collidableCubeMesh.position.y = -2.5;
-          collidableCubeMesh.position.z = y;
+          semaphorePos.push([x,-2.38,y]);
 
           nPole.rotation.y = degree*2;
           nPole.position.x = x+.5;
           nPole.position.z = y+.5;
           scene.add(nPole);
           scene.add(semaphore);
-          scene.add(collidableCubeMesh);
-          collideMeshListPoints.push(collidableCubeMesh);
           break;
         case 5:
           streePos.push([x,-2.5,y]);
@@ -954,11 +959,10 @@ function createMap(matrix){
   }
 
   rand1 = (Math.random() > 0.5) ? Math.PI/2 : -Math.PI/2;
-  //loadModelMerge("Models/Signals/stopsign.glb", stopPos,[0.009,0.009,0.009], Math.PI/2);
+  loadModelMerge("Models/Signals/stopsign.glb", stopPos,[0.009,0.009,0.009], Math.PI/2);
   loadModel("Models/Items/fuelTank.glb", fuelPos,[0.1/2,0.1/2,0.05/2]);
-  loadModelMerge("Models/Signals/NOestacionarse.glb", stopPos,[0.1/20,2.0/15,0.1/15],Math.PI/2);
+  //loadModelMerge("Models/Signals/NOestacionarse.glb", stopPos,[0.1/20,2.0/15,0.1/15],Math.PI/2);
   loadModelMerge("Models/Signals/signal2.glb", schoolPos,[0.1/15,2.0/15,0.1/15]);
-  addCollisionBox(schoolPos);
   loadModelMerge("Models/Trees/tree1.glb", treePos,[0.1,1/4,0.1]);
   loadModelMerge("Models/Trees/tree3.glb",treeType2Pos,[0.05,0.05,0.05],rand1);
   loadModelMerge("Models/Trees/bush.glb",treeType3Pos,[0.1,0.1,0.1]);
@@ -967,22 +971,30 @@ function createMap(matrix){
   loadModelMerge('Models/Buildings/lowPolyBuild8.glb',build1Pos,tilesize,rand1);
   loadModelMerge('Models/Buildings/lowpolybuild7.glb',build2Pos,tilesize,rand1);
   loadModelMerge('Models/Buildings/lowPolyBuild6.glb',build3Pos,tilesize,rand1);
-  //loadHumanModel('Models/human/Animated_Human.glb',[0.2,-2.5,0],[0.02,0.02,0.02]);
+  addCollisionBox(schoolPos,[-0.5,-0.5],0x55aaff,humanSpawn);
+  addCollisionBox(stopPos,[0.5,-0.5],0xffaabb,truckSpawnBox);
+  addCollisionBox(semaphorePos,[0,-1],0x88eebb, collisionBoxFront);
+  //console.log('HUMANS',humanSpawn.length);
+  loadHumanModel('Models/human/Animated_Human.glb',[0.2,-2.5,0],[0.02,0.02,0.02]);
+  loadTruckModel('Models/lowPolyTruck.glb',[0.1,0.1,0.1]);
+
+
+
 
 }
-function addCollisionBox(pos){
+function addCollisionBox(pos,offset,color,collisionArray){
   var cubeGeometry = new THREE.BoxGeometry(0.2,0.2,0.2);
-  var wireMaterial = new THREE.MeshBasicMaterial({color: 0x55aaff, wireframe: true});
+  var wireMaterial = new THREE.MeshBasicMaterial({color:color , wireframe: true});
   wireMaterial.visible = true;
   var spawn = new THREE.Mesh(cubeGeometry, wireMaterial);
   pos.forEach(function(value){
     var n_spawn = spawn.clone();
-    n_spawn.position.x = value[0]-.5;
+    n_spawn.position.x = value[0]+offset[0];
     n_spawn.position.y = value[1];
-    n_spawn.position.z = value[2]-.5;
+    n_spawn.position.z = value[2]+offset[1];
     scene.add(n_spawn);
     console.log(n_spawn);
-    humanSpawn.push(n_spawn);
+    collisionArray.push(n_spawn);
   });
 }
 function exist(x,y,matrix){
@@ -1010,6 +1022,9 @@ function collisionDectection(){
     var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
     var collisionResult = ray.intersectObjects(collideMeshList);
     var collisionResultPoints = ray.intersectObjects(humanSpawn);
+    var collisionHuman = ray.intersectObjects(humansHitBox);
+    var collisionTruck = ray.intersectObjects(truckSpawnBox);
+    var collisionSemaphoreFront = ray.intersectObjects(collisionBoxFront);
     if(collisionResult.length > 0 && collisionResult[0].distance < directionVector.length()){
         console.log('hit,1');
         var index = collideMeshList.indexOf(collisionResult[0].object);
@@ -1025,6 +1040,30 @@ function collisionDectection(){
         if(index > -1){ humanSpawn.splice(index,1)}
         scene.remove(collisionResultPoints[0].object)
         return [true,2,pos];
+    }
+    if(collisionHuman.length > 0 && collisionHuman[0].distance < directionVector.length() ){ //scene.getObjectById(collideMeshListPoints[0].id
+        console.log('hit,3');
+        var index = humansHitBox.indexOf(collisionHuman[0].object);
+        if(index > -1){ humansHitBox.splice(index,1)}
+        //scene.remove(collisionHuman[0].object)
+        return [true,3,collisionHuman[0].object];
+    }
+    if(collisionTruck.length > 0 && collisionTruck[0].distance < directionVector.length() ){
+      console.log('hit,4');
+      var pos = collisionTruck[0].object.position;
+      var index = truckSpawnBox.indexOf(collisionTruck[0].object);
+      if(index > -1){ truckSpawnBox.splice(index,1)}
+      scene.remove(collisionTruck[0].object)
+      return [true,4,pos];
+    }
+    if(collisionSemaphoreFront.length > 0 && collisionSemaphoreFront[0].distance < directionVector.length()){
+      console.log('hit,5');
+      var pos = collisionSemaphoreFront[0].object.position;
+      var index = collisionBoxFront.indexOf(collisionSemaphoreFront[0].object);
+      //if(index > -1){ collisionBoxFront.splice(index,1)}
+      //scene.remove(collisionSemaphoreFront[0].object)
+      console.log(collisionBoxFront.length);
+      return [true,5,pos];
     }
 
   }
@@ -1077,29 +1116,97 @@ function onKeyUp(event){
   // carControl.isRotatingRight = false;
   // carControl.isStoping = false;
 }
+function moveHuman(mesh,target){
+  hMove = new TWEEN.Tween(mesh.position)
+  hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).onComplete(function(){
+     scene.remove(mesh);
+   }).start();
+}
+// function moveHuman(mesh,target, collision){
+//   hMove = new TWEEN.Tween(mesh.position)
+//   hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).onComplete(function(){
+//      scene.remove(mesh);
+//    }).start();
+// }
 function updateCarTEMP(){
   var ox = Math.round(carBox.position.x);
   var oy = carBox.position.y;
   var oz = Math.round(carBox.position.z);
   moves = Evaluate(ox, oy, oz);
   var nPos = [];
-  var originPoint = carBox.position.clone()
+
   var collide = collisionDectection();
 
-  if(collide[0]== true && collide[1] == 1){//
+  if(collide[0]== true && collide[1] == 1){
     points += 5;
     pointElement.style.width = points+ '%';
   }
-  if(collide[0]==true && collide[1] == 2){
+  if(collide[0]== true && collide[1] == 2){
       var tarjetPos = new THREE.Vector3();
-      tarjetPos.x = collide[2].x - 1;
+      var tmp_human = humans.pop();
+      mixer = new THREE.AnimationMixer(tmp_human)
+      tmp_human.position.x = collide[2].x +2;
+      tmp_human.position.y = collide[2].y -.12;
+      tmp_human.position.z = collide[2].z +.5;
+      tmp_human.children[0].rotation.y = -Math.PI/2;
+
+      mixer.clipAction(humanWalkAnimation).setDuration(0.6).play();
+      tmp_human.updateMatrix();
+      scene.add(tmp_human);
+      tarjetPos.x = collide[2].x -1;
       tarjetPos.y = collide[2].y -.12;
       tarjetPos.z = collide[2].z +.5;
-     loadHumanModel('Models/human/Animated_Human.glb',
-     [collide[2].x+.8,collide[2].y-.12,collide[2].z+.5],[0.02,0.02,0.02],-Math.PI/2,tarjetPos);
+      humansHitBox.push(tmp_human);
+      moveHuman(tmp_human, tarjetPos);
+      //tmp_human.position.set(tarjetPos);
+     // loadHumanModel('Models/human/Animated_Human.glb',
+     // [collide[2].x+.8,collide[2].y-.12,collide[2].z+.5],[0.02,0.02,0.02],-Math.PI/2,tarjetPos);
   }
+  if(collide[0]== true && collide[1] == 3){
+    hMove.stop();
+    mixer.stopAllAction();
+    humanActiveAction = mixer.clipAction(humanDeathAnimation);
+    console.log(humanActiveAction);
+    humanActiveAction.clampWhenFinished = true;
+    humanActiveAction.loop = THREE.LoopOnce;
+    humanActiveAction.play();
+    mixer.addEventListener( 'finished', function( e ) {scene.remove(collide[2])} ); // properties of e: type, action
+  }
+  if(collide[0]== true && collide[1] == 4){
+     var tarjetPos = new THREE.Vector3();
+     var tmp_truck = truckCollisionBox.pop();
+    // mixer = new THREE.AnimationMixer(tmp_human)
+    console.log(tmp_truck)
+     tmp_truck.position.x = collide[2].x-1;
+     tmp_truck.position.y = collide[2].y-.12;
+     tmp_truck.position.z = collide[2].z-1;
+     tmp_truck.rotation.y = -Math.PI/2;
+    //
+    // mixer.clipAction(humanWalkAnimation).setDuration(1).play();
+    //
+     scene.add(tmp_truck);
+     tarjetPos.x = collide[2].x -1;
+     tarjetPos.y = collide[2].y -.12;
+     tarjetPos.z = collide[2].z +2;
+    // humansHitBox.push(tmp_human);
+    moveHuman(tmp_truck, tarjetPos);
+  }
+  if(collide[0]== true && collide[1] == 5){
+     var tarjetPos = new THREE.Vector3();
+     var tmp_truck = truckCollisionBox[0].clone();
+    // mixer = new THREE.AnimationMixer(tmp_human)
+    console.log(tmp_truck)
+     tmp_truck.position.x = collide[2].x-1;
+     tmp_truck.position.y = collide[2].y-.12;
+     tmp_truck.position.z = collide[2].z+1;
 
-
+     scene.add(tmp_truck);
+     tarjetPos.x = collide[2].x +2;
+     tarjetPos.y = collide[2].y -0.12 ;
+     tarjetPos.z = collide[2].z+1 ;
+    // humansHitBox.push(tmp_human);
+    moveHuman(tmp_truck, tarjetPos);
+  }
   // NORTH: [-1,0],
   // WEST: [0, -1],
   // EAST: [0, 1],
@@ -1424,7 +1531,7 @@ function updateLights(currentSecond){
         greenLightMesh[i].material.color.setHex(0x00ff00);
         redLightMesh[i].material.color.setHex(0x303030);
         //preSecond = currentSecond;
-        collideMeshListPoints.forEach(function (mesh) {
+        collisionBoxFront.forEach(function (mesh) {
           scene.remove(mesh);
         });
       }
@@ -1434,7 +1541,7 @@ function updateLights(currentSecond){
         yellowLightMesh[i].material.color.setHex(0xffff00);
         greenLightMesh[i].material.color.setHex(0x303030);
         redLightMesh[i].material.color.setHex(0x303030);
-        collideMeshListPoints.forEach(function (mesh) {
+        collisionBoxFront.forEach(function (mesh) {
           scene.add(mesh);
         });
         //preSecond = currentSecond;
@@ -1444,13 +1551,30 @@ function updateLights(currentSecond){
       for (var i = 0; i < redLightMesh.length; i++) {
         yellowLightMesh[i].material.color.setHex(0x303030);
         redLightMesh[i].material.color.setHex(0xff0000);
-
+        
         //preSecond = 0;
       }
       return true;
     }
 }catch(e){}
 
+}
+function loadTruckModel(path, size){
+  var cubeGeometry = new THREE.BoxGeometry(0.4,.1,.1);
+  var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+  wireMaterial.visible = true;
+  var loader = new THREE.GLTFLoader(loadingManager);
+  loader.load(path, function(gltf){
+    var mesh = gltf.scene;
+    truckSpawnBox.forEach(function(value){
+      var n_mesh = mesh.clone();
+      var collisionBox = new THREE.Mesh(cubeGeometry, wireMaterial);
+      n_mesh.scale.set(size[0],size[1],size[2]);
+      collisionBox.updateMatrix();
+      collisionBox.add(n_mesh);
+      truckCollisionBox.push(collisionBox);
+    });
+  });
 }
 function loadMerge(path,pos,scale) {
   var loader = new THREE.GLTFLoader(loadingManager);
@@ -1550,33 +1674,23 @@ function loadModel(path, pos, size) {
 
 }
 function loadHumanModel(path, pos, size, rotation, target){
-  var cubeGeometry = new THREE.BoxGeometry(0.5,.1,.1);
+  var cubeGeometry = new THREE.BoxGeometry(0.2,.1,.1);
   var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
   wireMaterial.visible = true;
-  human = new THREE.Mesh(cubeGeometry, wireMaterial);
-  var loader = new THREE.GLTFLoader();
-  loader.load(path, function(gltf){
-      var mesh = gltf.scene;
-      human.position.x = pos[0];
-      human.position.y = pos[1];
-      human.position.z = pos[2];
-
-      mesh.scale.set(size[0],size[1],size[2]);
-      if(rotation) mesh.rotation.y = rotation;
-
-      mesh.updateMatrix();
-      var hMove = new TWEEN.Tween(human.position)
-      human.add(mesh);
-      mixer = new THREE.AnimationMixer(mesh);
-      mixer.clipAction(gltf.animations[5]).setDuration(1).play()
-      scene.add(human);
-
-      hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).onComplete(function(){
-        scene.remove(human);
-        console.log(human)
-      }).start();
-
-  });
+  var hitBox = new THREE.Mesh(cubeGeometry, wireMaterial);
+  var loader = new THREE.GLTFLoader(loadingManager);
+  humanSpawn.forEach(function(value){
+    loader.load(path, function(gltf){
+        var n_hitBox = hitBox.clone();
+        var mesh = gltf.scene;
+        mesh.scale.set(size[0],size[1],size[2])
+        n_hitBox.add(mesh);
+        if(!humanWalkAnimation) humanWalkAnimation = gltf.animations[1];
+        if(!humanDeathAnimation) humanDeathAnimation = gltf.animations[2];
+        console.log(gltf.animations);
+        humans.push(n_hitBox);
+       });
+   });
 }
 function loadCar(x,y,z) {
   var cubeGeometry = new THREE.BoxGeometry(.15,.1,.09);
@@ -1739,7 +1853,6 @@ function createSemaphore(x,y,z){
   /***/
 
 }
-
 function render() {
   var delta = clock.getElapsedTime();
   var time = Date.now()
