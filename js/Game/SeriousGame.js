@@ -13,11 +13,7 @@ var container;
 var points = 100;
 const maxPoints = 100;
 var pointElement = document.getElementById("bar");
-var lose = false;
-const data = '{ "signals" : ['+
-                '"name": "Stop",'+
-                '"info": "Esta señal se coloca en las carreteras o vialidades urbanas de menor volumen de tránsito",'
-                ']}';
+
 var c_tree;
 var tree1;
 
@@ -59,6 +55,10 @@ var map;
 const mapSize = 900;
 var stats;
 var x = 0, y = 0,z = 0;
+
+// Game States
+var lostState = false;
+var lose = false;
 //Variables Miscelaneas
 const degree = (Math.PI/2);
 const limitX = Math.sqrt(mapSize)/2;
@@ -100,8 +100,12 @@ var mixer;
 var truckSpawnBox = [];
 var truckCollisionBox = [];
 
+//COLLISIONS
 //Semaphore Collisions
 var collisionBoxFront = [];
+var noFrontBox = [];
+
+
 
 var GameStart = false;
 
@@ -790,6 +794,7 @@ function createMap(matrix){
   var schoolPos = [];
   var fuelPos = [];
   var semaphorePos = [];
+  var noFrontPos = [];
   var rand1;
 
 
@@ -871,16 +876,16 @@ function createMap(matrix){
             stopPos.push([x+.5,-2.38,y+.5]);
           }
 
-          if(stopSignCount >= maxStopSign && y < matrix.length-2 && x<matrix.length-2 ){
 
-            var hitboxMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(1,.5,1), collidableCubeMaterial);
-            hitboxMesh.position.set(x,-2.5,y+.5);
+          if(evaluate_position[0] == 'EAST' && evaluate_position[1] == 'WEST' && evaluate_position[2] == 'NORTH' ){
+               var randP = Math.random();
+               if(randP>0.5){
+                 noFrontPos.push([x-0.5,-2.38,y+0.5]);
+               }
 
-            collideMeshListPoints.push(hitboxMesh);
-            scene.add(hitboxMesh);
-            maxStopSign = 0;
-          }
-          stopSignCount++;
+
+            }
+
           break;
         default:
 
@@ -961,8 +966,8 @@ function createMap(matrix){
   rand1 = (Math.random() > 0.5) ? Math.PI/2 : -Math.PI/2;
   loadModelMerge("Models/Signals/stopsign.glb", stopPos,[0.009,0.009,0.009], Math.PI/2);
   loadModel("Models/Items/fuelTank.glb", fuelPos,[0.1/2,0.1/2,0.05/2]);
-  //loadModelMerge("Models/Signals/NOestacionarse.glb", stopPos,[0.1/20,2.0/15,0.1/15],Math.PI/2);
-  loadModelMerge("Models/Signals/signal2.glb", schoolPos,[0.1/15,2.0/15,0.1/15]);
+  loadModelMerge("Models/Signals/NoFront.glb", noFrontPos,[0.1/20,2.0/15,0.1/15], -Math.PI/2);
+  loadModelMerge("Models/Signals/peaton.glb", schoolPos,[0.1/15,2.0/15,0.1/15]);
   loadModelMerge("Models/Trees/tree1.glb", treePos,[0.1,1/4,0.1]);
   loadModelMerge("Models/Trees/tree3.glb",treeType2Pos,[0.05,0.05,0.05],rand1);
   loadModelMerge("Models/Trees/bush.glb",treeType3Pos,[0.1,0.1,0.1]);
@@ -974,6 +979,7 @@ function createMap(matrix){
   addCollisionBox(schoolPos,[-0.5,-0.5],0x55aaff,humanSpawn);
   addCollisionBox(stopPos,[0.5,-0.5],0xffaabb,truckSpawnBox);
   addCollisionBox(semaphorePos,[0,-1],0x88eebb, collisionBoxFront);
+  addCollisionBox(noFrontPos,[1.5,-0.5],0x25eefa,noFrontBox)
   //console.log('HUMANS',humanSpawn.length);
   loadHumanModel('Models/human/Animated_Human.glb',[0.2,-2.5,0],[0.02,0.02,0.02]);
   loadTruckModel('Models/lowPolyTruck.glb',[0.1,0.1,0.1]);
@@ -983,7 +989,7 @@ function createMap(matrix){
 
 }
 function addCollisionBox(pos,offset,color,collisionArray){
-  var cubeGeometry = new THREE.BoxGeometry(0.2,0.2,0.2);
+  var cubeGeometry = new THREE.BoxBufferGeometry(0.2,0.2,0.2);
   var wireMaterial = new THREE.MeshBasicMaterial({color:color , wireframe: true});
   wireMaterial.visible = true;
   var spawn = new THREE.Mesh(cubeGeometry, wireMaterial);
@@ -993,7 +999,6 @@ function addCollisionBox(pos,offset,color,collisionArray){
     n_spawn.position.y = value[1];
     n_spawn.position.z = value[2]+offset[1];
     scene.add(n_spawn);
-    console.log(n_spawn);
     collisionArray.push(n_spawn);
   });
 }
@@ -1025,6 +1030,7 @@ function collisionDectection(){
     var collisionHuman = ray.intersectObjects(humansHitBox);
     var collisionTruck = ray.intersectObjects(truckSpawnBox);
     var collisionSemaphoreFront = ray.intersectObjects(collisionBoxFront);
+    var collisionsNoFront = ray.intersectObjects(noFrontBox);
     if(collisionResult.length > 0 && collisionResult[0].distance < directionVector.length()){
         console.log('hit,1');
         var index = collideMeshList.indexOf(collisionResult[0].object);
@@ -1046,6 +1052,7 @@ function collisionDectection(){
         var index = humansHitBox.indexOf(collisionHuman[0].object);
         if(index > -1){ humansHitBox.splice(index,1)}
         //scene.remove(collisionHuman[0].object)
+        lostState = true;
         return [true,3,collisionHuman[0].object];
     }
     if(collisionTruck.length > 0 && collisionTruck[0].distance < directionVector.length() ){
@@ -1060,12 +1067,19 @@ function collisionDectection(){
       console.log('hit,5');
       var pos = collisionSemaphoreFront[0].object.position;
       var index = collisionBoxFront.indexOf(collisionSemaphoreFront[0].object);
-      //if(index > -1){ collisionBoxFront.splice(index,1)}
-      //scene.remove(collisionSemaphoreFront[0].object)
+      if(index > -1){ collisionBoxFront.splice(index,1)}
+      scene.remove(collisionSemaphoreFront[0].object)
       console.log(collisionBoxFront.length);
       return [true,5,pos];
     }
-
+    if(collisionsNoFront.length > 0 && collisionsNoFront[0].distance < directionVector.length()){
+      console.log('hit,6');
+      var index = noFrontBox.indexOf(collisionsNoFront[0].object);
+      if(index > -1){ noFrontBox.splice(index,1)}
+      scene.remove(collisionsNoFront[0].object)
+      console.log(noFrontBox.length);
+      return [true,6];
+    }
   }
   //console.log('not hit');
   //carControl.isStoping = false;
@@ -1122,12 +1136,12 @@ function moveHuman(mesh,target){
      scene.remove(mesh);
    }).start();
 }
-// function moveHuman(mesh,target, collision){
-//   hMove = new TWEEN.Tween(mesh.position)
-//   hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).onComplete(function(){
-//      scene.remove(mesh);
-//    }).start();
-// }
+function moveTruck(mesh,target, collision){
+ hMove = new TWEEN.Tween(mesh.position)
+ hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).repeat(3).onComplete(function(){
+    scene.remove(mesh);
+  }).start();
+}
 function updateCarTEMP(){
   var ox = Math.round(carBox.position.x);
   var oy = carBox.position.y;
@@ -1176,7 +1190,6 @@ function updateCarTEMP(){
      var tarjetPos = new THREE.Vector3();
      var tmp_truck = truckCollisionBox.pop();
     // mixer = new THREE.AnimationMixer(tmp_human)
-    console.log(tmp_truck)
      tmp_truck.position.x = collide[2].x-1;
      tmp_truck.position.y = collide[2].y-.12;
      tmp_truck.position.z = collide[2].z-1;
@@ -1205,7 +1218,7 @@ function updateCarTEMP(){
      tarjetPos.y = collide[2].y -0.12 ;
      tarjetPos.z = collide[2].z+1 ;
     // humansHitBox.push(tmp_human);
-    moveHuman(tmp_truck, tarjetPos);
+    moveTruck(tmp_truck, tarjetPos);
   }
   // NORTH: [-1,0],
   // WEST: [0, -1],
@@ -1541,9 +1554,7 @@ function updateLights(currentSecond){
         yellowLightMesh[i].material.color.setHex(0xffff00);
         greenLightMesh[i].material.color.setHex(0x303030);
         redLightMesh[i].material.color.setHex(0x303030);
-        collisionBoxFront.forEach(function (mesh) {
-          scene.add(mesh);
-        });
+
         //preSecond = currentSecond;
       }
       return true;
@@ -1551,7 +1562,9 @@ function updateLights(currentSecond){
       for (var i = 0; i < redLightMesh.length; i++) {
         yellowLightMesh[i].material.color.setHex(0x303030);
         redLightMesh[i].material.color.setHex(0xff0000);
-        
+        collisionBoxFront.forEach(function (mesh) {
+          scene.add(mesh);
+        });
         //preSecond = 0;
       }
       return true;
@@ -1687,7 +1700,6 @@ function loadHumanModel(path, pos, size, rotation, target){
         n_hitBox.add(mesh);
         if(!humanWalkAnimation) humanWalkAnimation = gltf.animations[1];
         if(!humanDeathAnimation) humanDeathAnimation = gltf.animations[2];
-        console.log(gltf.animations);
         humans.push(n_hitBox);
        });
    });
@@ -1903,9 +1915,7 @@ function onlose(){
 }
 function ifLose(){
   if(checkifLose()){
-    lose = true;
-    console.log('You lose');
-
+   console.log('You lose');
     onlose();
   }
 }
@@ -1914,6 +1924,10 @@ function checkifLose(){
     return true;
   }
   if(minGoal <= 0 && secGoal <= 0){
+    return true;
+  }
+
+  if(lostState === true){
     return true;
   }
   return false;
