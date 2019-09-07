@@ -1689,7 +1689,7 @@ function loadModel(path, pos, size) {
 function loadHumanModel(path, pos, size, rotation, target){
   var cubeGeometry = new THREE.BoxGeometry(0.2,.1,.1);
   var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
-  wireMaterial.visible = true;
+  wireMaterial.visible = false;
   var hitBox = new THREE.Mesh(cubeGeometry, wireMaterial);
   var loader = new THREE.GLTFLoader(loadingManager);
   humanSpawn.forEach(function(value){
