@@ -292,7 +292,6 @@ function City(){
             case 'SOUTHWEST':
               break;
             case 'NORTHEAST':
-
               break;
             case 'NORTHWEST':
               break;
@@ -596,12 +595,12 @@ function createScene() {
   sceneWidth = window.innerWidth;
   sceneHeight = window.innerHeight;
   scene = new THREE.Scene();
-  //scene.fog = new THREE.FogExp2(0xffffff,.05);
+  //scene.fog = new THREE.FogExp2(0xffffff,.5);
   var textLoader = new THREE.TextureLoader(loadingManager);
   const textcube =  textLoader.load('Models/Textures/sky1.jpg');
   scene.background = textcube;
 
-  //scene.background = new THREE.Color( 0x0055ff);
+  //scene.background = new THREE.Color( 0xaa55ff);
   //Camara
   camera = new THREE.PerspectiveCamera(60, sceneWidth / sceneHeight, 0.1, 1000);
   camera.position.set(-0.5, 0.2, 0);
@@ -645,7 +644,8 @@ function createScene() {
   //stats
   stats = new Stats();
   container.appendChild(stats.dom);
-  //createInstances(city.getMatrix());
+  //createInstances(city.getMatrix
+  createSephore2(0,0,0);
   //WindowResize
   window.addEventListener('resize', onWindowsResize, false);
   onWindowsResize();
@@ -770,7 +770,7 @@ function createMap(matrix){
   var collidableCubeMaterial = new THREE.MeshBasicMaterial({color: 0xff00ff, wireframe: true});
 
   //goalCollision
-  var goalMaterial = new THREE.MeshBasicMaterial({color:0xff0000, wireframe:true})
+  var goalMaterial = new THREE.MeshBasicMaterial({color:0xff0000, wireframe:true, visible:false})
   var goalHitBox = new THREE.BoxBufferGeometry(0.2,0.2,0.2);
 
   var maxStopSign = 2;
@@ -830,7 +830,7 @@ function createMap(matrix){
             goalHitMesh.add(goal);
             goalHitMesh.position.set(x,-2.4, rand1);
             collideGoal.push(goalHitMesh);
-            scene.add(goalHitMesh);
+            //scene.add(goalHitMesh);
             isGoalAdded = true;
           }
           break;
@@ -855,11 +855,11 @@ function createMap(matrix){
           break;
         case 4:
           streePos.push([x,-2.5,y]);
-          var semaphore = createSemaphore(x,0,y);
+          //var semaphore = createSemaphore(x,0,y);
+          var semaphore = createSephore2();
+          semaphore.position.set( x-0.5, -2.2, y-0.5);
           var nPole = semaphore.clone();
-
           semaphorePos.push([x,-2.38,y]);
-
           nPole.rotation.y = degree*2;
           nPole.position.x = x+.5;
           nPole.position.z = y+.5;
@@ -991,7 +991,7 @@ function createMap(matrix){
 function addCollisionBox(pos,offset,color,collisionArray){
   var cubeGeometry = new THREE.BoxBufferGeometry(0.2,0.2,0.2);
   var wireMaterial = new THREE.MeshBasicMaterial({color:color , wireframe: true});
-  wireMaterial.visible = true;
+  wireMaterial.visible = false;
   var spawn = new THREE.Mesh(cubeGeometry, wireMaterial);
   pos.forEach(function(value){
     var n_spawn = spawn.clone();
@@ -1137,7 +1137,7 @@ function moveHuman(mesh,target){
    }).start();
 }
 function moveTruck(mesh,target, collision){
- hMove = new TWEEN.Tween(mesh.position)
+  hMove = new TWEEN.Tween(mesh.position)
  hMove.to(target,carSpeed2*3).easing(TWEEN.Easing.Quadratic.Out).repeat(3).onComplete(function(){
     scene.remove(mesh);
   }).start();
@@ -1667,7 +1667,7 @@ function loadTile(path,pos) {
 function loadModel(path, pos, size) {
   var cubeGeometry = new THREE.BoxGeometry(0.1,.1,.1);
   var wireMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
-  wireMaterial.visible = true;
+  wireMaterial.visible = false;
   var loader = new THREE.GLTFLoader(loadingManager);
   loader.load(path, function(gltf){
     var mesh = gltf.scene;
@@ -1707,22 +1707,15 @@ function loadHumanModel(path, pos, size, rotation, target){
 function loadCar(x,y,z) {
   var cubeGeometry = new THREE.BoxGeometry(.15,.1,.09);
   var wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
-  wireMaterial.visible = true;
+  wireMaterial.visible = false;
   carBox = new THREE.Mesh(cubeGeometry, wireMaterial);
   var loader = new THREE.GLTFLoader(loadingManager);
   loader.load('Models/lowPolyCar2.glb', function(gltf){
-    // gltf.scene.traverse(function(node){
-    //   if(node instanceof THREE.Mesh){
-    //     node.castShadow = true;
-    //     //node.receiveShadow = true;
-    //  }
-    // });
     car = gltf.scene;
     carBox.position.y    = y+0.05;
     carBox.rotation.y    = -Math.PI/2;
     car.position.y    -= .05;
     car.scale.set(0.05,0.05,0.05);
-    //carBox.scale.set(.05,.05,.05);
     carBox.add(camera);
     carBox.add(car);
     scene.add(carBox);
@@ -1740,10 +1733,8 @@ function loadLights() {
   var hemiLight = new THREE.HemisphereLight(0xfffafa,0x000000,0.9);
   var hemiligtHelper = new THREE.HemisphereLightHelper(hemiLight,5, 0xff0000);
 	hemiLight.position.set( 15, 15, 15 );
-  scene.add(sunhelper);
   scene.add(sun);
   scene.add(hemiLight);
-  scene.add(hemiligtHelper);
 }
 function removeFace(geometry){
   var n = [];
@@ -1800,6 +1791,7 @@ function createSemaphore(x,y,z){
   var yellowlightMaterial = new THREE.MeshBasicMaterial({color: 0x303030});
   var greedlightMaterial = new THREE.MeshBasicMaterial({color: 0x303030});
 
+  var geometry = new THREE.Geometry();
 
   var poleGeometry = new THREE.BoxGeometry(0.10/2,1.2/2,0.10/2);
   //poleGeometry.computeFlatVertexNormals();
@@ -1818,13 +1810,12 @@ function createSemaphore(x,y,z){
   var poleMesh = new THREE.Mesh(poleGeometry, material);
   var supportMesh = new THREE.Mesh(supportGeometry, material);
   var semaphoreMesh = new THREE.Mesh(semaphoreBox, material);
+
   redLightMesh.push(new THREE.Mesh(semaphoreLightBox,redlightMaterial));
   yellowLightMesh.push(new THREE.Mesh(semaphoreLightBox,yellowlightMaterial));
   greenLightMesh.push(new THREE.Mesh(semaphoreLightBox, greedlightMaterial));
 
-
   //Object Collidable
-
 
   redLightMesh[redLightMesh.length-1].rotation.x = degree;
   redLightMesh[redLightMesh.length-1].position.z -= (0.10/2)/2;
@@ -1844,25 +1835,104 @@ function createSemaphore(x,y,z){
   poleMesh.position.x = x-.5;
   poleMesh.position.y = -2.5+(1.2/2)/2;
   poleMesh.position.z = z-.5;
+  poleMesh.updateMatrix();
+  geometry.merge(poleMesh.geometry, poleMesh.matrix );
 
   // supportMesh.castShadow = true;
   // supportMesh.receiveShadow = true;
   supportMesh.position.y += (1.2/2)/2;
   supportMesh.position.x += (0.8/2)/2;
   supportMesh.rotation.z = degree;
+  supportMesh.updateMatrix();
+  geometry.merge( supportMesh.geometry, supportMesh.matrix );
 
   // semaphoreMesh.castShadow = true;
   // semaphoreMesh.receiveShadow = true;
   semaphoreMesh.position.x -= (0.10/2)/2;
   semaphoreMesh.position.y -= (0.10/2)/2;
+  semaphoreMesh.updateMatrix();
+  geometry.merge( semaphoreMesh.geometry, semaphoreMesh.matrix );
+
+  //geometry.merge( semaphoreMesh.geometry, semaphoreMesh.matrix );
+
   //scene.add(poleMesh);
+
   poleMesh.add(supportMesh);
   supportMesh.add(semaphoreMesh);
   semaphoreMesh.add(redLightMesh[redLightMesh.length-1]);
   semaphoreMesh.add(yellowLightMesh[yellowLightMesh.length-1]);
   semaphoreMesh.add(greenLightMesh[greenLightMesh.length-1]);
+
+  var mMesh = new THREE.Mesh( geometry, material );
   return poleMesh;
   /***/
+
+}
+
+function colorGeometry( color, geometry ){
+
+  geometry.faces.forEach( (value) =>{
+
+    value.color.set( color );
+
+  } );
+
+  return geometry;
+
+}
+function createSephore2(){
+
+   var mergeGeo = new THREE.Geometry();
+   var poleGeometry = new THREE.BoxGeometry(0.10/2,1.2/2,0.10/2);
+   removeFace(poleGeometry);
+   var supportGeometry = new THREE.BoxGeometry(0.05/2,0.8/2,0.05/2);
+   var semaphoreBox = new THREE.BoxGeometry(0.10/2,0.5/2,0.10/2);
+
+   colorGeometry( 0xc1ab00, poleGeometry );
+   colorGeometry( 0xc1ab00 , supportGeometry);
+   colorGeometry( 0xc1ab00 , semaphoreBox);
+
+   mergeGeo.merge(poleGeometry);
+   supportGeometry.rotateZ(-Math.PI/2);
+   supportGeometry.translate( (0.8/2)/2,(1.2/2)/2, 0 );
+   mergeGeo.merge(supportGeometry);
+
+   semaphoreBox.rotateZ(-Math.PI/2);
+   semaphoreBox.translate( (0.7)/3, (1.1/2)/2, 0 );
+   mergeGeo.merge( semaphoreBox );
+
+   //lights
+   var redlightMaterial = new THREE.MeshBasicMaterial({color: 0x303030});
+   var yellowlightMaterial = new THREE.MeshBasicMaterial({color: 0x303030});
+   var greedlightMaterial = new THREE.MeshBasicMaterial({color: 0x303030});
+
+   var redLightGeo = new THREE.CylinderBufferGeometry(0.02/2,0.05/2,0.02/2,6);
+   redLightGeo.addAttribute('color', new THREE.BufferAttribute(new Float32Array(semaphoreColors), 3));
+   var yellowLightGeo = new THREE.CylinderBufferGeometry(0.02/2,0.05/2,0.02/2,6);
+   yellowLightGeo.addAttribute('color', new THREE.BufferAttribute(new Float32Array(semaphoreColors), 3));
+   var greenLightGeo = new THREE.CylinderBufferGeometry(0.02/2,0.05/2,0.02/2,6);
+   greenLightGeo.addAttribute('color', new THREE.BufferAttribute(new Float32Array(semaphoreColors), 3));
+
+   redLightGeo.rotateX(degree);
+   redLightGeo.translate( (0.5)/3 ,(1.1/2)/2 , -(0.10/2)/2 );
+
+   yellowLightGeo.rotateX(degree);
+   yellowLightGeo.translate( (0.7)/3 ,(1.1/2)/2 , -(0.10/2)/2 );
+
+   greenLightGeo.rotateX(degree);
+   greenLightGeo.translate( (0.9)/3 ,(1.1/2)/2 , -(0.10/2)/2 );
+
+   redLightMesh.push(new THREE.Mesh(redLightGeo,redlightMaterial));
+   yellowLightMesh.push(new THREE.Mesh(yellowLightGeo,yellowlightMaterial));
+   greenLightMesh.push(new THREE.Mesh(greenLightGeo, greedlightMaterial));
+
+   var material = new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors } );
+   var m_se = new THREE.Mesh( mergeGeo,material )
+   m_se.add( redLightMesh[redLightMesh.length-1 ] )
+   m_se.add( yellowLightMesh[redLightMesh.length-1 ] )
+   m_se.add( greenLightMesh[redLightMesh.length-1 ] )
+
+   return m_se;
 
 }
 function render() {
@@ -1890,6 +1960,8 @@ function render() {
       renderer.render(scene,cinematicCamera);
   }
   else  renderer.render(scene,camera);
+
+  console.log(renderer.info.render.calls);
 }
 function onTransitionEnd(event){
   event.target.remove();
